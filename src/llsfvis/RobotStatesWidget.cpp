@@ -40,13 +40,13 @@ RobotStatesWidget::RobotStatesWidget() :
 			sigc::mem_fun(*this, &RobotStatesWidget::on_update), 1000);
 }
 
-void RobotStatesWidget::update_bot(boost::posix_time::time_duration time_since_update, const llsf_msgs::Robot& bot,
+void RobotStatesWidget::update_bot(boost::posix_time::ptime now, const llsf_msgs::Robot& bot,
 		Gtk::Label* bot_label) {
 	if (bot.IsInitialized()) {
 		Gdk::RGBA color;
 
-		boost::posix_time::seconds last_seen(bot.last_seen().sec());
-		time_since_update += last_seen;
+		boost::posix_time::ptime pLast_seen	= boost::posix_time::from_time_t(bot.last_seen().sec());
+		boost::posix_time::time_duration time_since_update = now - pLast_seen;
 
 		if (time_since_update.seconds() > TIMEEXCEEDED) {
 			color = Gdk::RGBA("dark red");
@@ -64,9 +64,9 @@ void RobotStatesWidget::update_bot(boost::posix_time::time_duration time_since_u
 
 bool RobotStatesWidget::on_update() {
 	boost::posix_time::ptime now(boost::posix_time::microsec_clock::local_time());
-	update_bot(now - bot1_updated, bot1_, &bot1_label_);
-	update_bot(now - bot2_updated, bot2_, &bot2_label_);
-	update_bot(now - bot2_updated, bot3_, &bot3_label_);
+	update_bot(now, bot1_, &bot1_label_);
+	update_bot(now, bot2_, &bot2_label_);
+	update_bot(now, bot3_, &bot3_label_);
 
 	//return event is handled
 	return true;
@@ -78,19 +78,16 @@ RobotStatesWidget::~RobotStatesWidget() {
 
 void RobotStatesWidget::setBot1(const llsf_msgs::Robot& bot) {
 	bot1_.CopyFrom(bot);
-	bot1_updated = boost::posix_time::microsec_clock::local_time();
 	bot1_frame_.set_label("[" + bot.team() + "]" + bot.name());
 }
 
 void RobotStatesWidget::setBot2(const llsf_msgs::Robot& bot) {
 	bot2_.CopyFrom(bot);
-	bot2_updated = boost::posix_time::microsec_clock::local_time();
 	bot2_frame_.set_label("[" + bot.team() + "]" + bot.name());
 }
 
 void RobotStatesWidget::setBot3(const llsf_msgs::Robot& bot) {
 	bot3_ .CopyFrom(bot);
-	bot3_updated = boost::posix_time::microsec_clock::local_time();
 	bot3_frame_.set_label("[" + bot.team() + "]" + bot.name());
 }
 

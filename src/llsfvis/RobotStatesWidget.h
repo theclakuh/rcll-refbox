@@ -40,7 +40,7 @@ private:
 	Gtk::Frame bot3_frame_;
 	Gtk::Label bot3_label_;
 
-	void update_bot(boost::posix_time::time_duration time_since_update,
+	void update_bot(boost::posix_time::ptime now,
 			const llsf_msgs::Robot& bot, Gtk::Label* bot_label);
 
 	static const int TIMEEXCEEDED = 30;
