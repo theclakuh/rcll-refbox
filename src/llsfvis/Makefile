@@ -20,7 +20,11 @@ include $(BUILDSYSDIR)/protobuf.mk
 include $(BUILDSYSDIR)/gui.mk
 include $(BUILDSYSDIR)/boost.mk
 
-CFLAGS += $(CFLAGS_CPP11) -I/usr/include/webkitgtk-3.0 -I/usr/include/libsoup-2.4/
+CFLAGS_WEBKITGTK = -I/usr/include/webkitgtk-3.0
+CFLAGS_SOUP = -I/usr/include/libsoup-2.4
+HAVE_WEBKITGTK = $(if $(wildcard /usr/include/webkitgtk-3.0),1)
+HAVE_SOUP = $(if $(wildcard /usr/include/libsoup-2.4),1)
+
 
 REQ_BOOST_LIBS = thread asio system signals2 format date_time
 HAVE_BOOST_LIBS = $(call boost-have-libs,$(REQ_BOOST_LIBS))
@@ -31,12 +35,13 @@ OBJS_llsfvis = llsfvis.o MainWindow.o PlayFieldWidget.o StateWidget.o \
     PucksWidget.o PuckStateWidget.o OrdersWidget.o OrderWidget.o HTMLWidget.o
 
 
-ifeq ($(HAVE_GTKMM_3)$(HAVE_BOOST_LIBS)$(HAVE_PROTOBUF),111)
+ifeq ($(HAVE_GTKMM_3)$(HAVE_BOOST_LIBS)$(HAVE_PROTOBUF)$(HAVE_WEBKITGTK)$(HAVE_SOUP),11111)
   OBJS_all =	$(OBJS_llsfvis)
   BINS_all =	$(BINDIR)/llsfvis
   
-  CFLAGS  += $(CFLAGS_PROTOBUF)$(CFLAGS_GUI)\
-  	$(call boost-libs-cflags,$(REQ_BOOST_LIBS))
+  CFLAGS  += $(CFLAGS_CPP11) $(CFLAGS_PROTOBUF) $(CFLAGS_GUI)\
+  	$(call boost-libs-cflags,$(REQ_BOOST_LIBS))\
+  	$(CFLAGS_WEBKITGTK) $(CFLAGS_SOUP)
   LDFLAGS += $(LDFLAGS_PROTOBUF)$(LDFLAGS_GUI)\
   	$(call boost-libs-ldflags,$(REQ_BOOST_LIBS))
   
@@ -50,14 +55,24 @@ else
    ifneq ($(HAVE_BOOST_LIBS),1)
     WARN_TARGETS_BOOST = $(foreach l,$(REQ_BOOST_LIBS),$(if $(call boost-have-lib,$l),, warning_boost_$l))
    endif
+   ifneq ($(HAVE_WEBKITGTK),1)
+    WARN_TARGETS += warning_webkitgtk
+   endif
+   ifneq ($(HAVE_SOUP),1)
+    WARN_TARGETS += warning_soup
+   endif
 endif
 ifeq ($(OBJSSUBMAKE),1)
 all: $(WARN_TARGETS)
 gui: $(WARN_TARGETS)
-.PHONY: warning_nogtkmm
+.PHONY: warning_nogtkmm warning_webkitgtk warning_soup
 warning_nogtkmm:
 	$(SILENT)echo -e "$(INDENT_PRINT)--> $(TRED)Cannot build LLSFVis$(TNORMAL) (gtkmm-3.0 not found)"
-	$(WARN_TARGETS_BOOST): warning_boost_%:
+warning_webkitgtk:
+	$(SILENT)echo -e "$(INDENT_PRINT)--> $(TRED)Cannot build LLSFVis$(TNORMAL) (webkitgtk-3.0 not found)"
+warning_soup:
+	$(SILENT)echo -e "$(INDENT_PRINT)--> $(TRED)Cannot build LLSFVis$(TNORMAL) (libsoup-2.4 not found)"
+$(WARN_TARGETS_BOOST): warning_boost_%:
 	$(SILENT)echo -e "$(INDENT_PRINT)--> $(TRED)Cannot build protobuf_comm library$(TNORMAL) (Boost library $* not found)"
 endif
 
