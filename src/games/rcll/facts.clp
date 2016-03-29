@@ -259,6 +259,10 @@
   (slot real-time-factor (type FLOAT) (default 0.0))
 )
 
+;deftemplates to check for with any-factp
+(deftemplate sim-init-default-map)
+(deftemplate init-carologistics-map)
+
 ; Machine directions in LLSF arena frame when looking from bird's eye perspective
 (defglobal
   ?*M-EAST*   = (* (/ 3.0 2.0) (pi))   ; 270 deg or -90 deg

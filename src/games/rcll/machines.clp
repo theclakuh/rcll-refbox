@@ -141,7 +141,8 @@
 	  )
 
    else
-	 (if (not (any-factp ((?s sim-init-default-map)) TRUE))
+	 (if (not (or (any-factp ((?s sim-init-default-map)) TRUE)
+	     	      (any-factp ((?s init-carologistics-map)) TRUE)))
     then
 
 	  (printout t "Performing " ?*RANDOMIZE-STEPS-MACHINES*

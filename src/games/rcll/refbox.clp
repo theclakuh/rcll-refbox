@@ -13,6 +13,8 @@
 (load* (resolve-file net.clp))
 (if (config-get-bool "/llsfrb/simulation/enable")
   then (printout t "Enabling simulation" crlf) (load* (resolve-file simulation.clp)))
+(if (config-get-bool "/llsfrb/testing/enable")
+  then (printout t "Enabling testing setup" crlf) (load* (resolve-file testing.clp)))
 (load* (resolve-file machines.clp))
 (load* (resolve-file robots.clp))
 (load* (resolve-file orders.clp))
