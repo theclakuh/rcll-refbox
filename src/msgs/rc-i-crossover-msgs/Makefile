@@ -13,17 +13,13 @@
 #
 #*****************************************************************************
 
-BASEDIR = ../..
+BASEDIR = ../../..
 
 include $(BASEDIR)/etc/buildsys/config.mk
 
-SUBDIRS = rc-i-crossover-msgs
+PROTOBUF_all = rc_i_msgs
 
-PROTOBUF_all = llsf_msgs
-
-MSGS_llsf_msgs = $(notdir $(patsubst %.proto,%,$(wildcard $(SRCDIR)/*.proto)))
-
-MachineReport.pb.cpp: | Team.pb.cpp
+MSGS_rc_i_msgs = $(notdir $(patsubst %.proto,%,$(wildcard $(SRCDIR)/*.proto)))
 
 include $(BUILDSYSDIR)/protobuf.mk
 include $(BUILDSYSDIR)/base.mk
