@@ -114,7 +114,7 @@
 
 		; Do not randomize base color in 2015
 		;(bind ?order-base-color (pick-random$ (deftemplate-slot-allowed-values order base-color)))
-		(bind ?order-cap-color (pick-random$ (deftemplate-slot-allowed-values order cap-color)))
+		;(bind ?order-cap-color (pick-random$ (deftemplate-slot-allowed-values order cap-color)))
 
 		(switch ?order:complexity
 			;(case C0 then) ; for C0 we have nothing to do, no ring color
@@ -128,7 +128,7 @@
 
     (modify ?order (active FALSE) (activate-at ?activate-at) (delivery-gate ?gate)
 	    (delivery-period ?deliver-start ?deliver-end)
-			(ring-colors ?order-ring-colors) (cap-color ?order-cap-color))
+			(ring-colors ?order-ring-colors))
   )
 
   ; Randomize number of required additional bases

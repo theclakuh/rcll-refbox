@@ -176,7 +176,7 @@
 
 
 (deftemplate delivery-period
-  (multislot delivery-gates (type SYMBOL) (allowed-values D1 D2 D3 D4 D5 D6) (cardinality 2 2))
+  (multislot delivery-gates (type SYMBOL) (allowed-values D1 D2 D3 D4 D5 D6 RC_I_AT_WORK) (cardinality 2 2))
   (multislot period (type INTEGER) (cardinality 2 2))
 )  
  
@@ -318,15 +318,8 @@
 )
 
 (deffacts orders
-  (order (id  1) (complexity C0) (quantity-requested 1) (start-range 0 0)
-	       (activation-range 900 900) (duration-range 900 900))
-  (order (id  2) (complexity C0) (quantity-requested 1) (start-range 200 400))
-  (order (id  3) (complexity C0) (quantity-requested 2) (start-range 300 700))
-  (order (id  4) (complexity C0) (quantity-requested 1) (start-range 700 900))
-  (order (id  5) (complexity C1) (quantity-requested 1) (start-range 0 0)
-	       (activation-range 900 900) (duration-range 900 900))
-  (order (id  6) (complexity C2) (quantity-requested 1) (start-range 600 720)
-	       (activation-range 300 600))
-  (order (id  7) (complexity C3) (quantity-requested 1) (start-range 600 720)
-	       (activation-range 300 600))
+  (order (id  1) (complexity C0) (quantity-requested 9) (start-range 0 0)
+	       (activation-range 900 900) (duration-range 900 900) (cap-color CAP_BLACK))
+  (order (id  2) (complexity C0) (quantity-requested 9) (start-range 0 0)
+	       (activation-range 900 900) (duration-range 900 900) (cap-color CAP_GREY))
 )
