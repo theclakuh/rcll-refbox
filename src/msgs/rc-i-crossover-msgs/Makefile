@@ -17,9 +17,9 @@ BASEDIR = ../../..
 
 include $(BASEDIR)/etc/buildsys/config.mk
 
-PROTOBUF_all = rc_i_msgs
+PROTOBUF_all = crossover_msgs
 
-MSGS_rc_i_msgs = $(notdir $(patsubst %.proto,%,$(wildcard $(SRCDIR)/*.proto)))
+MSGS_crossover_msgs = $(notdir $(patsubst %.proto,%,$(wildcard $(SRCDIR)/*.proto)))
 
 include $(BUILDSYSDIR)/protobuf.mk
 include $(BUILDSYSDIR)/base.mk

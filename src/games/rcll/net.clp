@@ -607,6 +607,24 @@
   (pb-destroy ?oi)
 )
 
+(defrule net-receive-rc-i-crossover-order
+  (time $?now)
+  ?mf <- (protobuf-msg (type "crossover_msgs.Order") (ptr ?p))
+  (order (id ?id-top))
+  (not (order (id ?id-other&:(> ?id-other ?id-top))))
+  =>
+  (printout warn "Received crossover order " crlf)
+  (retract ?mf)
+  (assert (order (id (+ ?id-top 1)) (complexity C0) (base-color BASE_RED)
+          (cap-color (pb-field-value ?p "cap_color"))
+          (quantity-requested (pb-field-value ?p "quantity_requested"))
+          ;(activate-at ?now) (delivery-period 0 (- 900 ?now))))
+          )
+  )
+  ; TODO do I need this to get the order get activated? (bind ?s (signal (type order-info)))
+  ; TODO get highest id and map id to @work id
+  (assert (crossover-order-map (rcll-id (+ ?id-top 1)) (crossover-id (pb-field-value ?p "id"))))
+)
 
 (defrule net-send-VersionInfo
   (time $?now)

@@ -173,7 +173,10 @@
   (slot req-bases (type INTEGER) (default 0))
 )
 
-
+(deftemplate crossover-order-map
+  (slot rcll-id (type INTEGER) (default -1))
+  (slot crossover-id (type INTEGER) (default -1))
+)
 
 (deftemplate delivery-period
   (multislot delivery-gates (type SYMBOL) (allowed-values D1 D2 D3 D4 D5 D6 RC_I_AT_WORK) (cardinality 2 2))

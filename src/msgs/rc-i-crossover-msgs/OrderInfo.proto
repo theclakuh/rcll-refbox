@@ -35,7 +35,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package rc_i_msgs;
+package crossover_msgs;
 
 option java_package = "org.robocup_industrial.crossover_msgs";
 option java_outer_classname = "OrderInfoProtos";
@@ -47,8 +47,8 @@ enum CapColor {
 
 message Order {
   enum CompType {
-    COMP_ID  = 2000;
-    MSG_TYPE = 42;
+    COMP_ID  = 4000;
+    MSG_TYPE = 1;
   }
 
   // ID and requested product of this order
@@ -63,8 +63,8 @@ message Order {
 
 message OrderInfo {
   enum CompType {
-    COMP_ID  = 2000;
-    MSG_TYPE = 41;
+    COMP_ID  = 4000;
+    MSG_TYPE = 2;
   }
 
   // The current orders
