@@ -50,14 +50,18 @@ OBJS_rcll_set_machine_state = rcll-set-machine-state.o
 LIBS_rcll_machine_add_base = stdc++ llsfrbcore llsfrbutils llsfrbconfig llsf_protobuf_comm llsf_msgs
 OBJS_rcll_machine_add_base = rcll-machine-add-base.o
 
+LIBS_rc_i_ll_send_crossover_msgs = stdc++ llsfrbcore llsfrbutils llsfrbconfig llsf_protobuf_comm crossover_msgs
+OBJS_rc_i_ll_send_crossover_msgs = rc-i-ll-send-crossover-msgs.o
+
 ifeq ($(HAVE_PROTOBUF)$(HAVE_BOOST_LIBS),11)
   OBJS_all += $(OBJS_llsf_show_peers) $(OBJS_llsf_fake_robot) $(OBJS_llsf_report_machine) \
 	      $(OBJS_rcll_prepare_machine) $(OBJS_rcll_set_machine_state) \
-	      $(OBJS_rcll_machine_add_base)
+	      $(OBJS_rcll_machine_add_base) $(OBJS_rc_i_ll_send_crossover_msgs)
   BINS_all += $(BINDIR)/llsf-show-peers $(BINDIR)/llsf-fake-robot \
 	      $(BINDIR)/llsf-report-machine $(BINDIR)/rcll-prepare-machine \
 	      $(BINDIR)/rcll-set-machine-state \
-	      $(BINDIR)/rcll-machine-add-base
+	      $(BINDIR)/rcll-machine-add-base \
+	      $(BINDIR)/rc-i-ll-send-crossover-msgs
 
   CFLAGS_llsf_show_peers  += $(CFLAGS_PROTOBUF) \
 	     		     $(call boost-libs-cflags,$(REQ_BOOST_LIBS))
@@ -89,6 +93,10 @@ ifeq ($(HAVE_PROTOBUF)$(HAVE_BOOST_LIBS),11)
   LDFLAGS_rcll_machine_add_base += $(LDFLAGS_PROTOBUF) \
 	     		         $(call boost-libs-ldflags,$(REQ_BOOST_LIBS))
 
+  CFLAGS_rc_i_ll_send_crossover_msgs  += $(CFLAGS_PROTOBUF) \
+	     		         $(call boost-libs-cflags,$(REQ_BOOST_LIBS))
+  LDFLAGS_rc_i_ll_send_crossover_msgs += $(LDFLAGS_PROTOBUF) \
+	     		         $(call boost-libs-ldflags,$(REQ_BOOST_LIBS))
   #MANPAGES_all =  $(MANDIR)/man1/refbox-llsf.1
 else
   ifneq ($(HAVE_PROTOBUF),1)
