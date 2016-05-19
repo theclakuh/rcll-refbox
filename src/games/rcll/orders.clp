@@ -110,7 +110,13 @@
 	(printout warn "Product delivered which was not requested" crlf)
 )
 
-
+(defrule crossover-order-delivered
+  (gamestate (state RUNNING) (phase PRODUCTION) (game-time ?gt))
+  (product-delivered (game-time ?game-time) (order ?id-rcll) (team ?team))
+  (crossover-order-map (rcll-id ?id-rcll) (crossover-id ?id-cross))
+  =>
+  (printout warn "Delivered Crossover product " ?id-cross " (RCLL ID " ?id-rcll  ")" crlf)
+)
 
 (defrule order-delivered-in-time
   ?gf <- (gamestate (state RUNNING) (phase PRODUCTION) (game-time ?gt))
