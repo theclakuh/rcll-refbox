@@ -320,9 +320,9 @@
   ;(machine-light-code (id 10) (code RED-BLINK))
 )
 
-(deffacts orders
-  (order (id  1) (complexity C0) (quantity-requested 9) (start-range 0 0)
-	       (activation-range 900 900) (duration-range 900 900) (cap-color CAP_BLACK))
-  (order (id  2) (complexity C0) (quantity-requested 9) (start-range 0 0)
-	       (activation-range 900 900) (duration-range 900 900) (cap-color CAP_GREY))
-)
+;(deffacts orders
+;  (order (id  1) (complexity C0) (quantity-requested 9) (start-range 0 0)
+;	       (activation-range 900 900) (duration-range 900 900) (cap-color CAP_BLACK))
+;  (order (id  2) (complexity C0) (quantity-requested 9) (start-range 0 0)
+;	       (activation-range 900 900) (duration-range 900 900) (cap-color CAP_GREY))
+;)
