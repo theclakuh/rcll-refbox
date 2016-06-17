@@ -74,10 +74,6 @@ handle_connected()
   order.set_quantity_delivered(0);
 
   client_->send(order);
-
-//  usleep(200000);
-//  quit = true;
-//  io_service_.stop();
 }
 
 void
@@ -93,9 +89,13 @@ handle_message(uint16_t component_id, uint16_t msg_type,
 {
   std::shared_ptr<crossover_msgs::Order> order;
   if (order = std::dynamic_pointer_cast<crossover_msgs::Order>(msg)) {
-    printf("requested %u\tdelivert %u\n", order->quantity_requested(), order->quantity_delivered());
-    if (order->quantity_requested() <= order->quantity_delivered()) {
-      printf("ORDER IS DONE for RCLL\n");
+//    printf("requested %u\tdelivert %u\n", order->quantity_requested(), order->quantity_delivered());
+    if (order->id() == id_) {
+      if (order->quantity_requested() <= order->quantity_delivered()) {
+        printf("ORDER IS DONE for RCLL\n");
+        quit = true;
+        io_service_.stop();
+      }
     }
   } else {
     printf("Can't decode msg\n");
