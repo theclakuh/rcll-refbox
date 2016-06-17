@@ -40,6 +40,7 @@
 #include <utils/system/argparser.h>
 
 #include <msgs/rc-i-crossover-msgs/OrderInfo.pb.h>
+#include <msgs/OrderInfo.pb.h>
 
 using namespace protobuf_comm;
 using namespace fawkes;
@@ -74,9 +75,9 @@ handle_connected()
 
   client_->send(order);
 
-  usleep(200000);
-  quit = true;
-  io_service_.stop();
+//  usleep(200000);
+//  quit = true;
+//  io_service_.stop();
 }
 
 void
@@ -90,6 +91,15 @@ void
 handle_message(uint16_t component_id, uint16_t msg_type,
 	       std::shared_ptr<google::protobuf::Message> msg)
 {
+  std::shared_ptr<crossover_msgs::Order> order;
+  if (order = std::dynamic_pointer_cast<crossover_msgs::Order>(msg)) {
+    printf("requested %u\tdelivert %u\n", order->quantity_requested(), order->quantity_delivered());
+    if (order->quantity_requested() <= order->quantity_delivered()) {
+      printf("ORDER IS DONE for RCLL\n");
+    }
+  } else {
+    printf("Can't decode msg\n");
+  }
 }
 
 
@@ -105,6 +115,8 @@ int
 main(int argc, char **argv)
 {
   client_ = new ProtobufStreamClient();
+  MessageRegister & pcmr = client_->message_register();
+  pcmr.add_message_type<crossover_msgs::Order>();
 
   ArgumentParser argp(argc, argv, "");
 

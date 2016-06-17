@@ -168,6 +168,15 @@
   (slot points-supernumerous (type INTEGER) (default 1))
 )
 
+(deftemplate crossover-order
+  (slot id (type INTEGER))
+  (slot active (type SYMBOL) (allowed-values FALSE TRUE) (default TRUE))
+  (slot cap-color (type SYMBOL) (allowed-values CAP_BLACK CAP_GREY))
+  (slot quantity-requested (type INTEGER) (default 1))
+  ; Quantity delivered for both teams in the order C,M
+  (multislot quantity-delivered (type INTEGER) (default 0))
+)
+
 (deftemplate ring-spec
   (slot color (type SYMBOL) (allowed-values RING_BLUE RING_GREEN RING_ORANGE RING_YELLOW))
   (slot req-bases (type INTEGER) (default 0))
@@ -179,7 +188,8 @@
 )
 
 (deftemplate delivery-period
-  (multislot delivery-gates (type SYMBOL) (allowed-values D1 D2 D3 D4 D5 D6 RC_I_AT_WORK) (cardinality 2 2))
+  ;(multislot delivery-gates (type SYMBOL) (allowed-values D1 D2 D3 D4 D5 D6 RC_I_AT_WORK) (cardinality 2 2))
+  (multislot delivery-gates (type SYMBOL) (allowed-values D1 D2 D3 D4 D5 D6) (cardinality 2 2))
   (multislot period (type INTEGER) (cardinality 2 2))
 )  
  
@@ -189,6 +199,9 @@
   (slot team (type SYMBOL) (allowed-values nil CYAN MAGENTA))
 )
 
+(deftemplate product-delivered-crossover
+  (slot order (type INTEGER))
+)
 (deftemplate order-delivered-by-color
   (slot game-time (type FLOAT))
   (slot team-color (type SYMBOL) (allowed-values nil CYAN MAGENTA))
@@ -280,6 +293,7 @@
   (signal (type machine-info-bc) (time (create$ 0 0)) (seq 1))
   (signal (type ring-info-bc) (time (create$ 0 0)) (seq 1))
   (signal (type order-info) (time (create$ 0 0)) (seq 1))
+  (signal (type order) (time (create$ 0 0)) (seq 1))
   (signal (type machine-report-info) (time (create$ 0 0)) (seq 1))
   (signal (type version-info) (time (create$ 0 0)) (seq 1))
   (signal (type exploration-info) (time (create$ 0 0)) (seq 1))

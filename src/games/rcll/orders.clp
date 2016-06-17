@@ -110,14 +110,6 @@
 	(printout warn "Product delivered which was not requested" crlf)
 )
 
-(defrule crossover-order-delivered
-  (gamestate (state RUNNING) (phase PRODUCTION) (game-time ?gt))
-  (product-delivered (game-time ?game-time) (order ?id-rcll) (team ?team))
-  (crossover-order-map (rcll-id ?id-rcll) (crossover-id ?id-cross))
-  =>
-  (printout warn "Delivered Crossover product " ?id-cross " (RCLL ID " ?id-rcll  ")" crlf)
-)
-
 (defrule order-delivered-in-time
   ?gf <- (gamestate (state RUNNING) (phase PRODUCTION) (game-time ?gt))
   ?pf <- (product-delivered (game-time ?game-time) (order ?id) (team ?team))
@@ -127,6 +119,7 @@
 		(quantity-requested ?q-req) (quantity-delivered $?q-del) (delivery-gate ?dg)
 		(delivery-period $?dp&:(>= ?gt (nth$ 1 ?dp))&:(<= ?gt (nth$ 2 ?dp))))
   =>
+  (assert (product-delivered-crossover (order ?id)))
   (retract ?pf)
 	(bind ?q-del-idx (order-q-del-index ?team))
   (bind ?q-del-new (replace$ ?q-del ?q-del-idx ?q-del-idx (+ (nth$ ?q-del-idx ?q-del) 1)))
@@ -164,6 +157,17 @@
 		    (points ?order-points-supernumerous) 
 		    (reason (str-cat "Delivered item for order " ?id))))
   )
+)
+
+(defrule crossover-order-delivered
+  (gamestate (state RUNNING) (phase PRODUCTION) (game-time ?gt))
+  ?d <- (product-delivered-crossover (order ?id-rcll))
+  (crossover-order-map (rcll-id ?id-rcll) (crossover-id ?id-cross))
+  ?o <- (crossover-order (id ?id-cross) (quantity-delivered ?quant))
+  =>
+  (retract ?d)
+  (printout warn "Delivered Crossover product " ?id-cross " (RCLL ID " ?id-rcll  ")" crlf)
+  (modify ?o (quantity-delivered (+ ?quant 1)))
 )
 
 (defrule order-delivered-out-of-time

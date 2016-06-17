@@ -578,6 +578,20 @@
   (return ?o)
 )
 
+(deffunction net-create-Crossover-Order (?order-fact)
+  (bind ?o (pb-create "crossover_msgs.Order"))
+
+  (pb-set-field ?o "id" (fact-slot-value ?order-fact id))
+  (pb-set-field ?o "cap_color" (fact-slot-value ?order-fact cap-color))
+
+  (pb-set-field ?o "quantity_requested" (fact-slot-value ?order-fact quantity-requested))
+  (pb-set-field ?o "quantity_delivered" (fact-slot-value ?order-fact quantity-delivered))
+;  (pb-set-field ?o "quantity_delivered_magenta"
+;		(nth$ 2 (fact-slot-value ?order-fact quantity-delivered)))
+
+  (return ?o)
+)
+
 (deffunction net-create-OrderInfo ()
   (bind ?oi (pb-create "llsf_msgs.OrderInfo"))
 
@@ -607,6 +621,29 @@
   (pb-destroy ?oi)
 )
 
+(defrule net-send-crossover-order
+  (time $?now)
+  (gamestate (phase PRODUCTION))
+  ?sf <- (signal (type order) (seq ?seq) (count ?count)
+		 (time $?t&:(timeout ?now ?t (if (> ?count ?*BC-ORDERINFO-BURST-COUNT*)
+					       then ?*BC-ORDERINFO-PERIOD*
+					       else ?*BC-ORDERINFO-BURST-PERIOD*))))
+  (network-peer (group PUBLIC) (id ?peer-id))
+  =>
+  (modify ?sf (time ?now) (seq (+ ?seq 1)) (count (+ ?count 1)))
+
+  (do-for-all-facts
+    ((?order crossover-order)) (eq ?order:active TRUE)
+    (bind ?o (net-create-Crossover-Order ?order))
+    ; (pb-add-list ?oi "orders" ?o) ; destroys ?o
+    (do-for-all-facts ((?client network-client)) (not ?client:is-slave)
+      (pb-send ?client:id ?o)
+    )
+    (pb-broadcast ?peer-id ?o)
+    (pb-destroy ?o)
+  )
+)
+
 (defrule net-receive-rc-i-crossover-order
   (time $?now)
   ?mf <- (protobuf-msg (type "crossover_msgs.Order") (ptr ?p))
@@ -618,11 +655,18 @@
   (assert (order (id (+ ?id-top 1)) (complexity C0) (base-color BASE_RED)
           (cap-color (pb-field-value ?p "cap_color"))
           (quantity-requested (pb-field-value ?p "quantity_requested"))
+          (delivery-gate 1)
           ;(activate-at ?now) (delivery-period 0 (- 900 ?now))))
           )
   )
   ; TODO do I need this to get the order get activated? (bind ?s (signal (type order-info)))
   ; TODO get highest id and map id to @work id
+  (assert (crossover-order
+      (id (pb-field-value ?p "id"))
+      (cap-color (pb-field-value ?p "cap_color"))
+      (quantity-requested (pb-field-value ?p "quantity_requested"))
+    )
+  )
   (assert (crossover-order-map (rcll-id (+ ?id-top 1)) (crossover-id (pb-field-value ?p "id"))))
 )
 
@@ -636,11 +680,18 @@
   (assert (order (id 1) (complexity C0) (base-color BASE_RED)
           (cap-color (pb-field-value ?p "cap_color"))
           (quantity-requested (pb-field-value ?p "quantity_requested"))
+          (delivery-gate 1)
           ;(activate-at ?now) (delivery-period 0 (- 900 ?now))))
           )
   )
   ; TODO do I need this to get the order get activated? (bind ?s (signal (type order-info)))
   ; TODO get highest id and map id to @work id
+  (assert (crossover-order
+      (id (pb-field-value ?p "id"))
+      (cap-color (pb-field-value ?p "cap_color"))
+      (quantity-requested (pb-field-value ?p "quantity_requested"))
+    )
+  )
   (assert (crossover-order-map (rcll-id 1) (crossover-id (pb-field-value ?p "id"))))
 )
 
