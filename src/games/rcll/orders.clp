@@ -163,10 +163,21 @@
   (gamestate (state RUNNING) (phase PRODUCTION) (game-time ?gt))
   ?d <- (product-delivered-crossover (order ?id-rcll))
   (crossover-order-map (rcll-id ?id-rcll) (crossover-id ?id-cross))
+  (crossover-order (id ?id-cross) (quantity-delivered ?quant))
+  =>
+  (retract ?d)
+  (printout warn "Delivered Crossover product " ?id-cross " (RCLL ID " ?id-rcll  ") going to move to at_work arena" crlf)
+  (assert (crossover-arena-transission (id ?id-rcll)))
+)
+
+(defrule crossover-order-moved-to-at-work
+  (gamestate (state RUNNING) (phase PRODUCTION) (game-time ?gt))
+  ?d <- (crossover-arena-transission (id ?id-rcll) (completed TRUE))
+  (crossover-order-map (rcll-id ?id-rcll) (crossover-id ?id-cross))
   ?o <- (crossover-order (id ?id-cross) (quantity-delivered ?quant))
   =>
   (retract ?d)
-  (printout warn "Delivered Crossover product " ?id-cross " (RCLL ID " ?id-rcll  ")" crlf)
+  (printout warn "Moved product " ?id-cross " (RCLL ID " ?id-rcll  ") to at-work arena" crlf)
   (modify ?o (quantity-delivered (+ ?quant 1)))
 )
 

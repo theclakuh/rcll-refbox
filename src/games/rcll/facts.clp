@@ -177,6 +177,13 @@
   (multislot quantity-delivered (type INTEGER) (default 0))
 )
 
+(deftemplate crossover-arena-transission
+  (slot id (type INTEGER))
+  (slot from (type SYMBOL) (allowed-values RCLL AT_WORK) (default RCLL))
+  (slot to (type SYMBOL) (allowed-values RCLL AT_WORK) (default AT_WORK))
+  (slot completed (type SYMBOL) (allowed-values TRUE FALSE) (default FALSE))
+)
+
 (deftemplate ring-spec
   (slot color (type SYMBOL) (allowed-values RING_BLUE RING_GREEN RING_ORANGE RING_YELLOW))
   (slot req-bases (type INTEGER) (default 0))

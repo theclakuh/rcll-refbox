@@ -592,6 +592,17 @@
   (return ?o)
 )
 
+(deffunction net-create-Crossover-Transission (?exchange-fact)
+  (bind ?o (pb-create "crossover_msgs.Exchange"))
+
+  (pb-set-field ?o "id" (fact-slot-value ?exchange-fact id))
+  (pb-set-field ?o "place_from" (fact-slot-value ?exchange-fact from))
+  (pb-set-field ?o "place_to" (fact-slot-value ?exchange-fact to))
+  (pb-set-field ?o "completed" (fact-slot-value ?exchange-fact completed))
+
+  (return ?o)
+)
+
 (deffunction net-create-OrderInfo ()
   (bind ?oi (pb-create "llsf_msgs.OrderInfo"))
 
@@ -619,6 +630,31 @@
     (pb-send ?client:id ?oi))
   (pb-broadcast ?peer-id ?oi)
   (pb-destroy ?oi)
+)
+
+(defrule net-send-crossover-transission
+  ?t <- (crossover-arena-transission (completed FALSE))
+  =>
+  (bind ?pb (net-create-Crossover-Transission ?t))
+
+  (do-for-all-facts ((?client network-client)) (not ?client:is-slave)
+    (pb-send ?client:id ?pb)
+  )
+  (pb-destroy ?pb)
+)
+
+(defrule net-receive-crossover-transission
+  ?mf <- (protobuf-msg (type "crossover_msgs.Exchange") (ptr ?p))
+  ?t <- (crossover-arena-transission (id ?rcll-id) (completed FALSE))
+  =>
+  (retract ?mf)
+  (if (eq (pb-field-value ?p "id") ?rcll-id)
+  then
+    (if (pb-field-value ?p "completed")
+    then
+      (modify ?t (completed TRUE))
+    )
+  )
 )
 
 (defrule net-send-crossover-order
