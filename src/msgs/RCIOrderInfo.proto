@@ -70,3 +70,22 @@ message OrderInfo {
   // The current orders
   repeated Order orders = 1;
 }
+
+message Exchange {
+  enum CompType {
+    COMP_ID  = 4000;
+    MSG_TYPE = 3;
+  }
+
+  enum Place {
+    RCLL = 1;
+    AT_WORK = 2;
+  }
+
+  required uint32       id  = 1;
+
+  required Place place_from = 2;
+  required Place place_to   = 3;
+  
+  required bool completed   = 4;
+}
