@@ -67,6 +67,11 @@
   )
 )
 
+(deffunction machine-team (?machine-name)
+	(bind ?prefix (sub-string 1 1 (str-cat ?machine-name)))
+	(return (if (eq ?prefix "C") then CYAN else MAGENTA))
+)
+
 (deffunction machine-init-randomize (?ring-colors)
   (if ?*RANDOMIZE-GAME* then
     ; Gather all available light codes
