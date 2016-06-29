@@ -336,7 +336,7 @@
 	       (activation-range 480 780) (duration-range 120 180))
   (order (id  7) (complexity C3) (quantity-requested 1) (start-range 600 720)
 	       (activation-range 900 900) (duration-range 120 180))
-  (order (id  8) (complexity C0) (quantity-requested 1) (start-range 900 900)
+  (order (id  8) (complexity C0) (quantity-requested 2) (start-range 900 900)
          (activation-range 0 0) (duration-range 300 300) (allow-overtime TRUE))
 )
 
