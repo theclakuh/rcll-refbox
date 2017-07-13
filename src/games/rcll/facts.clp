@@ -361,12 +361,12 @@
   (setup-light-toggle CS2)
   (whac-a-mole-light NONE)
 
-  (machine (name C-BS)  (team CYAN) (mtype BS) (zone C_Z41) (rotation 0))
-  (machine (name C-DS)  (team CYAN) (mtype DS) (zone C_Z11) (rotation 0))
+  (machine (name C-BS)  (team CYAN) (mtype BS) (zone C_Z53) (rotation 90))
+  (machine (name C-DS)  (team CYAN) (mtype DS) (zone C_Z25) (rotation 0))
   (machine (name C-SS)  (team CYAN) (mtype SS) (zone C_Z77) (rotation 0))
   (machine (name C-RS1) (team CYAN) (mtype RS) (zone C_Z13) (rotation 270))
-  (machine (name C-RS2) (team CYAN) (mtype RS) (zone C_Z53) (rotation 90))
-  (machine (name C-CS1) (team CYAN) (mtype CS) (zone C_Z25) (rotation 0))
+  (machine (name C-RS2) (team CYAN) (mtype RS) (zone C_Z41) (rotation 0))
+  (machine (name C-CS1) (team CYAN) (mtype CS) (zone C_Z21) (rotation 0))
   (machine (name C-CS2) (team CYAN) (mtype CS) (zone C_Z33) (rotation 180))
 
   (machine (name M-BS)  (team MAGENTA) (mtype BS) (zone M_Z11) (rotation 0))
