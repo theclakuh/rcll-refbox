@@ -14,7 +14,7 @@ if [[ -n $TMUX ]] || [[ $SCREEN ]]; then
 			  tmux new-window bash -c "./rcll-simulate-mps -m ${t}-${m}; read"
       fi
       if [[ $SCREEN ]]; then
-        screen bash -c "./rcll-simulate-mps -m ${t}-${m}; read"
+        screen -t "${t}-${m}" bash -c "./rcll-simulate-mps -m ${t}-${m}; read"
       fi
 		done
 	done
