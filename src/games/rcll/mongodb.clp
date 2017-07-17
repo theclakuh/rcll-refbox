@@ -4,6 +4,7 @@
 ;
 ;  Created: Mon Jun 10 19:06:19 2013
 ;  Copyright  2013  Tim Niemueller [www.niemueller.de]
+;             2017  Tobias Neumann
 ;  Licensed under BSD license, cf. LICENSE file
 ;---------------------------------------------------------------------------
 
@@ -84,11 +85,10 @@
      (bson-append ?m-doc "type" ?m:mtype)
      (bson-append ?m-doc "zone" ?m:zone)
      (bson-append-array ?m-doc "pose" ?m:pose)
+     (bson-append ?m-doc "orientation" ?m:rotation)
      (bson-append ?m-doc "productions" ?m:productions)
      (bson-append ?m-doc "proc-time" ?m:proc-time)
      (bson-append-array ?m-doc "down-period" ?m:down-period)
-     (bson-append ?m-doc "exploration-light-code" ?m:exploration-light-code)
-     (bson-append ?m-doc "exploration-type" ?m:exploration-type)
 
      (if (eq ?m:mtype RS) then
        (bson-append-array ?m-doc "rs-ring-colors" ?m:rs-ring-colors)
@@ -274,6 +274,7 @@
   (declare (salience ?*PRIORITY_FIRST*))
   (gamestate (phase SETUP|EXPLORATION|PRODUCTION) (prev-phase PRE_GAME))
   (not (game-parameterized))
+  (test (any-factp ((?m machine)) (eq ?m:zone TBD)))
 	=>
 	(mongodb-load-machine-zones)
 )
