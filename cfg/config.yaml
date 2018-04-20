@@ -24,38 +24,38 @@ llsfrb:
     test-lights: true
 
   mps:
-    enable: false
+    enable: true
     # type: 1(incoming station), 2(singel p&p), 3(double p&p), 4(delivery station)
     stations:
       C-BS:
-        active: false
+        active: true
+        host: !ipv4 127.0.0.1
+        port: !tcp-port 4501
         type: BS
-        host: !ipv4 192.168.2.27
-        port: !tcp-port 502
       C-CS1:
-        active: false
-        host: !ipv4 192.168.2.24
-        port: !tcp-port 502
+        active: true
+        host: !ipv4 127.0.0.1
+        port: !tcp-port 4502
         type: CS
       C-CS2:
-        active: false
-        host: !ipv4 192.168.2.25
-        port: !tcp-port 502
+        active: true
+        host: !ipv4 127.0.0.1
+        port: !tcp-port 4503
         type: CS
       C-RS1:
-        active: false
-        host: !ipv4 192.168.2.23
-        port: !tcp-port 502
+        active: true
+        host: !ipv4 127.0.0.1
+        port: !tcp-port 4504
         type: RS
       C-RS2:
         active: true
-        host: !ipv4 192.168.2.26
-        port: !tcp-port 502
+        host: !ipv4 127.0.0.1
+        port: !tcp-port 4505
         type: RS
       C-DS:
-        active: false
-        host: !ipv4 192.168.2.28
-        port: !tcp-port 502
+        active: true
+        host: !ipv4 127.0.0.1
+        port: !tcp-port 4506
         type: DS
       M-BS:
         active: false
@@ -110,25 +110,25 @@ llsfrb:
     server-port: !tcp-port 4444
     
     public-peer:
-      #host: !ipv4 192.168.122.255
-      host: !ipv4 127.0.0.1
-      #port: !udp-port 4444
-      send-port: !udp-port 4444
-      recv-port: !udp-port 4445
+      host: !ipv4 172.26.255.255
+      #host: !ipv4 127.0.0.1
+      port: !udp-port 4444
+      #send-port: !udp-port 4444
+      #recv-port: !udp-port 4445
 
     cyan-peer:
-      #host: !ipv4 192.168.122.255
-      host: !ipv4 127.0.0.1
-      #port: !udp-port 4441
-      send-port: !udp-port 4441
-      recv-port: !udp-port 4446
+      host: !ipv4 172.26.255.255
+      #host: !ipv4 127.0.0.1
+      port: !udp-port 4441
+      #send-port: !udp-port 4441
+      #recv-port: !udp-port 4446
 
     magenta-peer:
-      #host: !ipv4 192.168.122.255
-      host: !ipv4 127.0.0.1
-      #port: !udp-port 4442
-      send-port: !udp-port 4442
-      recv-port: !udp-port 4447
+      host: !ipv4 172.26.255.255
+      #host: !ipv4 127.0.0.1
+      port: !udp-port 4442
+      #send-port: !udp-port 4442
+      #recv-port: !udp-port 4447
 
   mongodb:
     enable: false
@@ -143,17 +143,17 @@ llsfrb:
     crypto-keys:
       Carologistics: randomkey
     # whenever a random field should be generated or not (e.g. used from mongodb)
-    random-field: true
+    random-field: false
 
   shell:
     refbox-host: localhost
     refbox-port: 4444
 
   simulation:
-    enable: true
+    enable: false
     # synchronize refbox time with the time of a simulation 
     time-sync:
-      enable: true
+      enable: false
       # estimate time by using the last given simulation time speed
       # (helps reducing the amount of messages to send)
-      estimate-time: true
+      estimate-time: false
