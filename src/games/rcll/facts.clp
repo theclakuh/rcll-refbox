@@ -340,7 +340,7 @@
   (machine (name C-SS)  (team CYAN) (mtype SS) (zone C_Z77) (rotation 0))
   (machine (name C-RS1) (team CYAN) (mtype RS) (zone C_Z21) (rotation 180))
   (machine (name C-RS2) (team CYAN) (mtype RS) (zone C_Z24) (rotation 0))
-  (machine (name C-CS1) (team CYAN) (mtype CS) (zone C_Z45) (rotation 45))
+  (machine (name C-CS1) (team CYAN) (mtype CS) (zone C_Z45) (rotation 0))
   (machine (name C-CS2) (team CYAN) (mtype CS) (zone C_Z33) (rotation 135))
 
   (machine (name M-BS)  (team MAGENTA) (mtype BS) (zone M_Z11) (rotation 0))
