@@ -139,9 +139,13 @@ llsfrb:
       protobuf: llsfrb.protobuf
 
   game:
-    teams: [Carologistics]
+    teams: [Carologistics,labrpxlr1,labrpxlr2,labrpxlr3,labrpxlr4]
     crypto-keys:
       Carologistics: randomkey
+      labrpxlr1: randomkey
+      labrpxlr2: randomkey
+      labrpxlr3: randomkey
+      labrpxlr4: randomkey
     # whenever a random field should be generated or not (e.g. used from mongodb)
     random-field: true
 
