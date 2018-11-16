@@ -30,15 +30,17 @@
   (declare (salience ?*PRIORITY_HIGHER*))
   (gamestate (phase PRODUCTION) (state RUNNING) (game-time ?gt))
   ?mf <- (machine (name ?name) (mtype ?mtype)
-		  (state ?state&~DOWN) (proc-start ?proc-start)
-		  (down-period $?dp&:(<= (nth$ 1 ?dp) ?gt)&:(>= (nth$ 2 ?dp) ?gt)))
+                  (state ?state&~DOWN) (proc-start ?proc-start)
+                  (wait-for-product-since ?wait-since)
+                  (down-period $?dp&:(<= (nth$ 1 ?dp) ?gt)&:(>= (nth$ 2 ?dp) ?gt)))
   =>
   (bind ?down-time (- (nth$ 2 ?dp) (nth$ 1 ?dp)))
   (printout t "Machine " ?name " down for " ?down-time " sec" crlf)
   (if (eq ?state PROCESSING)
    then
-    (modify ?mf (state DOWN) (desired-lights RED-ON) (prev-state ?state)
-	    (proc-start (+ ?proc-start ?down-time)))
+     (modify ?mf (state DOWN) (desired-lights RED-ON) (prev-state ?state)
+            (proc-start (+ ?proc-start ?down-time))
+            (wait-for-product-since (+ ?wait-since ?down-time)))
    else
     (modify ?mf (state DOWN) (prev-state ?state) (desired-lights RED-ON))
   )
