@@ -1,7 +1,3 @@
-(deffacts custom-order-game
-  (custom-order)
-)
-
 (defrule load-custom-order
   (not (custom-order))
 =>
@@ -76,7 +72,7 @@
          ) 
 ;  ?of <- (order (id ?id))
 =>
-  (printout t "INFO: invalidated initial order id " ?id crlf)
+  (printout t "INFO: Invalidated initial order id " ?id crlf)
   (modify ?of (start-range      9998 9999) 
               (duration-range      0    1) 
               (delivery-period  9998 9999) 
@@ -118,6 +114,6 @@
   (custom-order)
   ?of <- (order (id ?id&:(>= ?id 10)))
 =>
-  (printout t "added custom order with id " ?id crlf)
+  (printout t "Added custom order with id " ?id crlf)
   (ppfact ?of)
 )
