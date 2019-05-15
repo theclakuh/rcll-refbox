@@ -59,8 +59,14 @@
 (defrule enable-custom-order-success
   (custom-order)
 =>
+  (printout t "INFO: Enabling custom-order was successful" crlf)
+)
+
+(defrule suppress-randomization
+  (not (game-parameterized))
+=>
   (assert (game-parameterized))
-  (printout t "INFO: enabling custom-order was successful" crlf)
+  (printout t "INFO: Supressing random game parameterization." crlf)
 )
 
 (defrule invalidate-initial-orders
