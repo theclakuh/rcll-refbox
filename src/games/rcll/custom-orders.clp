@@ -59,6 +59,7 @@
 (defrule enable-custom-order-success
   (custom-order)
 =>
+  (assert (game-parameterized))
   (printout t "INFO: enabling custom-order was successful" crlf)
 )
 
