@@ -22,6 +22,7 @@
 (load* (resolve-file production.clp))
 (load* (resolve-file exploration.clp))
 ;(load* (resolve-file challenges.clp))
+(load* (resolve-file custom-orders.clp))
 
 (defrule config-timer-interval
   (confval (path "/llsfrb/clips/timer-interval") (type ?t) (value ?v))
