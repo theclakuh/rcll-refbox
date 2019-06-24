@@ -1,8 +1,13 @@
+;-- force activate custom-orders
 (defrule load-custom-order
   (not (custom-order))
 =>
   (assert (custom-order))
 )
+
+;--
+;-- FUNCTIONS
+;--
 
 (deffunction id-from-gensym
   ()
@@ -21,15 +26,11 @@
   (bind ?custom-order-id (id-from-gensym))
   (bind ?gate (random 1 3))
   (bind ?complexity (pb-field-value ?order "complexity"))
-  (printout t "complexity " ?complexity crlf)
   (bind ?base-color (pb-field-value ?order "base_color"))
-  (printout t "base-color " ?base-color crlf)
   (bind ?cap-color (pb-field-value ?order "cap_color"))
-  (printout t "cap-color " ?cap-color crlf)
   (bind ?ring-colors (create$))
   (progn$ (?color (pb-field-list ?order "ring_colors"))
     (bind ?ring-colors (append$ ?ring-colors  ?color))
-    (printout t "ring-color " ?color crlf)
   )
 
   (assert (order (id ?custom-order-id) 
@@ -40,43 +41,41 @@
                  (cap-color ?cap-color)
                  (quantity-requested 1) 
                  (quantity-delivered 0 0)
-                 (start-range ?order-time 1020) 
-                 (duration-range 0 1020)
-                 (delivery-period 0 1020)
+                 (start-range 0 0) 
+                 (duration-range 0 0)
+                 (delivery-period (+ ?order-time 5.0) 1020)
                  (delivery-gate ?gate)
                  (active FALSE) ;-- TODO: determine when this gets activated 
-                 (activate-at (+ ?order-time 1.0))
-                 (activation-range (max 0.0 (- ?order-time 1.0)) (+ ?order-time 5.0)) ;-- deploy order in the next 5 seconds
-                 (allow-overtime TRUE)
-          )
+                 (activate-at (+ ?order-time 5.0))
+                 (activation-range 0 0)
+                 (allow-overtime FALSE)
+         )
   )
 )
 
-(defrule enable-custom-order-success
+;--
+;-- RULES
+;--
+
+(defrule print-custom-order-success
   (custom-order)
 =>
   (printout t "INFO: Enabling custom-order was successful" crlf)
 )
 
-(defrule suppress-randomization
-  (not (game-parameterized))
-=>
-  (assert (game-parameterized))
-  (printout t "INFO: Supressing random game parameterization." crlf)
-)
-
 (defrule invalidate-initial-orders
   (custom-order)
   ?of <- (order (id ?id&:(< ?id 10))
-                (start-range ?ss&:(< ?ss 9998) ?se&:(< ?se 9999))
+                (start-range ?ss&:(< ?ss 1020) ?se&:(<= ?se 1020))
          ) 
-;  ?of <- (order (id ?id))
 =>
   (printout t "INFO: Invalidated initial order id " ?id crlf)
-  (modify ?of (start-range      9998 9999) 
-              (duration-range      0    1) 
-              (delivery-period  9998 9999) 
-              (activation-range 9998 9999)
+  
+  ;-- shift the standard game orders to the end of the game-time
+  (modify ?of (start-range      1020 1020) 
+              (duration-range      0    0) 
+              (delivery-period  1020 1020) 
+              (activation-range 1020 1020)
   )
 )
 
@@ -89,17 +88,26 @@
             (rcvd-from ?from-host ?from-port)
             (client-id ?cid)
          )
-  (network-peer (group ?grp) (id ?peer-id))
 
   =>
 
-  ;(printout t "send custom-OrderInfo to " ?grp " " ?peer-id crlf)
-
+  (printout t "INFO: Resceived and insert order information from client " ?cid crlf)
+  
   ;-- insert orders from message
   (foreach ?o (pb-field-list ?ptr "orders")
     (insert-custom-order ?o ?now)
   )
+)
 
+(defrule broadcast-custom-orders
+  (custom-order)
+  ?of <- (order (id ?id&:(> ?id 10)))
+  ?np <- (network-peer (group ?grp) (id ?peer-id))
+
+=>
+
+  (printout t "INFO: Broadcast custom order " ?id " to peer " ?peer-id " (" ?grp ")" crlf)
+  
   ;-- create order-info from orders in kb
   (bind ?oi (net-create-OrderInfo))
   
@@ -108,12 +116,4 @@
 
   ;-- release order-info object
   (pb-destroy ?oi)
-)
-
-(defrule invalidate-init-orders
-  (custom-order)
-  ?of <- (order (id ?id&:(>= ?id 10)))
-=>
-  (printout t "Added custom order with id " ?id crlf)
-  (ppfact ?of)
 )
