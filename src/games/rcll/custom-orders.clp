@@ -101,21 +101,3 @@
   )
 )
 
-(defrule broadcast-custom-orders
-  (custom-order)
-  ?of <- (order (id ?id&:(> ?id 10)))
-  ?np <- (network-peer (group ?grp) (id ?peer-id))
-
-=>
-
-  (printout t "INFO: Broadcast custom order " ?id " to peer " ?peer-id " (" ?grp ")" crlf)
-  
-  ;-- create order-info from orders in kb
-  (bind ?oi (net-create-OrderInfo))
-  
-  ;-- broadcast order-info to active team
-  (pb-broadcast ?peer-id ?oi)
-
-  ;-- release order-info object
-  (pb-destroy ?oi)
-)
