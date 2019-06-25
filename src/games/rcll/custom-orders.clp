@@ -66,17 +66,19 @@
 (defrule invalidate-initial-orders
   (custom-order)
   ?of <- (order (id ?id&:(< ?id 10))
-                (start-range ?ss&:(< ?ss 1020) ?se&:(<= ?se 1020))
+                (start-range ?ss&:(< ?ss 1320) ?se&:(<= ?se 1320))
          ) 
 =>
   (printout t "INFO: Invalidated initial order id " ?id crlf)
-  
+
+  (retract ?of)  
+
   ;-- shift the standard game orders to the end of the game-time
-  (modify ?of (start-range      1020 1020) 
-              (duration-range      0    0) 
-              (delivery-period  1020 1020) 
-              (activation-range 1020 1020)
-  )
+  ;(modify ?of (start-range      1020 1020) 
+  ;            (duration-range      0    0) 
+  ;            (delivery-period  1020 1020) 
+  ;            (activation-range 1020 1020)
+  ;)
 )
 
 (defrule net-recv-custom-OrderInfo
