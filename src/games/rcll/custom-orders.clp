@@ -6,6 +6,15 @@
 )
 
 ;--
+;-- TEMPLATE DEFS
+;--
+(deftemplate response-info
+  (slot client (type INTEGER)) 
+  (slot extern-id (type INTEGER)) 
+  (slot order-id (type INTEGER)) 
+)
+
+;--
 ;-- FUNCTIONS
 ;--
 
@@ -51,6 +60,8 @@
                  (allow-overtime FALSE)
          )
   )
+
+  (return ?custom-order-id)
 )
 
 ;--
@@ -90,14 +101,37 @@
             (rcvd-from ?from-host ?from-port)
             (client-id ?cid)
          )
-
-  =>
-
+=>
   (printout t "INFO: Resceived and insert order information from client " ?cid crlf)
   
   ;-- insert orders from message
   (foreach ?o (pb-field-list ?ptr "orders")
-    (insert-custom-order ?o ?now)
+    (bind ?eid (pb-field-value ?o "id"))
+    (bind ?oid 
+      (insert-custom-order ?o ?now)
+    )
+    (assert (response-info
+              (client ?cid) 
+              (extern-id ?eid) 
+              (order-id ?oid)
+            )
+    )
   )
 )
 
+(defrule custom-product-delivered
+  (custom-order)
+  ?gf <- (gamestate (phase PRODUCTION|POST_GAME))
+  ?pf <- (product-delivered 
+           (order ?oid&~0) 
+         )
+  ?ri <- (response-info 
+           (client ?cid) 
+           (extern-id ?eid) 
+           (order-id ?oid)
+         )
+=>
+  (retract ?ri)
+  (printout t "INFO: responed to delivered " ?oid " (aka. " ?eid ") ordered by " ?cid crlf)
+  
+)
