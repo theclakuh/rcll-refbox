@@ -21,8 +21,11 @@
 (deffunction id-from-gensym
   ()
 
+  ;-- build id as string
   (bind ?idstr (str-cat (gensym*)))
   (bind ?idstr-len (str-length ?idstr))
+
+  ;-- turn to interger and add order offset
   (bind ?id (integer (string-to-field (sub-string 4 ?idstr-len ?idstr))))
   (bind ?id (+ ?id (integer 10))) ;-- add init order offset
 
@@ -32,6 +35,7 @@
 (deffunction insert-custom-order
   (?order ?order-time)
 
+  ;-- gather data from message object
   (bind ?custom-order-id (id-from-gensym))
   (bind ?gate (random 1 3))
   (bind ?complexity (pb-field-value ?order "complexity"))
@@ -42,6 +46,7 @@
     (bind ?ring-colors (append$ ?ring-colors  ?color))
   )
 
+  ;-- compose and insert order fact
   (assert (order (id ?custom-order-id) 
                  (complexity ?complexity)
                  (competitive FALSE)
@@ -82,14 +87,8 @@
 =>
   (printout t "INFO: Invalidated initial order id " ?id crlf)
 
+  ;-- remove original game order
   (retract ?of)  
-
-  ;-- shift the standard game orders to the end of the game-time
-  ;(modify ?of (start-range      1020 1020) 
-  ;            (duration-range      0    0) 
-  ;            (delivery-period  1020 1020) 
-  ;            (activation-range 1020 1020)
-  ;)
 )
 
 (defrule net-recv-custom-OrderInfo
@@ -110,6 +109,7 @@
     (bind ?oid 
       (insert-custom-order ?o ?now)
     )
+    ;-- remember orders and orderer (client)
     (assert (response-info
               (client ?cid) 
               (extern-id ?eid) 
@@ -124,14 +124,29 @@
   ?gf <- (gamestate (phase PRODUCTION|POST_GAME))
   ?pf <- (product-delivered 
            (order ?oid&~0) 
+           (team ?team)
          )
   ?ri <- (response-info 
            (client ?cid) 
            (extern-id ?eid) 
            (order-id ?oid)
          )
+  ?of <- (order
+           (id ?oid)
+         )
 =>
+  ;-- forget order and orderer
   (retract ?ri)
+
   (printout t "INFO: responed to delivered " ?oid " (aka. " ?eid ") ordered by " ?cid crlf)
-  
+
+  ;-- compose message to inform controller about delivery
+  (bind ?delivery-msg (pb-create "llsf_msgs.SetOrderDelivered"))
+  (pb-set-field ?delivery-msg "order_id" ?eid)
+                  (pb-set-field ?delivery-msg "team_color" ?team)
+
+  ;-- actually send message
+  ;(pb-broadcast ?cid ?delivery-msg)
+  (pb-send ?cid ?delivery-msg)
+  (pb-destroy ?delivery-msg)
 )
