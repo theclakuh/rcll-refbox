@@ -11,7 +11,12 @@
 (deftemplate response-info
   (slot client (type INTEGER)) 
   (slot extern-id (type INTEGER)) 
-  (slot order-id (type INTEGER)) 
+  (slot product-count (type INTEGER)) 
+)
+
+(deftemplate response-product-info
+  (slot extern-id (type INTEGER)) 
+  (slot product-id (type INTEGER)) 
 )
 
 ;--
@@ -101,49 +106,83 @@
             (client-id ?cid)
          )
 =>
-  (printout t "INFO: Resceived and insert order information from client " ?cid crlf)
+
+  (printout t "INFO: Resceived order information from client " ?cid crlf)
   
   ;-- insert orders from message
+  (bind ?eid -1)
+  (bind ?cnt 0)
   (foreach ?o (pb-field-list ?ptr "orders")
-    (bind ?eid (pb-field-value ?o "id"))
+    (bind ?eid (pb-field-value ?o "id")) ;-- NOTE: should be equal for all orders
+
     (bind ?oid 
       (insert-custom-order ?o ?now)
     )
-    ;-- remember orders and orderer (client)
-    (assert (response-info
-              (client ?cid) 
-              (extern-id ?eid) 
-              (order-id ?oid)
+    
+    ;-- increase product count
+    (bind ?cnt (+ ?cnt 1))
+    
+    ;-- assert response-product-info
+    (assert (response-product-info
+              (extern-id ?eid)
+              (product-id ?oid)
             )
     )
+    
+    (printout t "INFO: Append product " ?oid " to order " ?eid crlf)
   )
+  
+  ;-- remember orders and orderer (client)
+  (assert (response-info
+            (client ?cid) 
+            (extern-id ?eid) 
+            (product-count ?cnt)
+          )
+  )
+    
+  (printout t "INFO: Inserted order " ?eid " with " ?cnt " products" crlf)
 )
 
 (defrule custom-product-delivered
+  ?pf <- (product-delivered (order ?oid&~0))
+  ?of <- (order (id ?oid))
+  ?roi <- (response-product-info 
+            (extern-id ?eid) 
+            (product-id ?oid)
+          )
+  ?ri <- (response-info 
+           (extern-id ?eid) 
+           (product-count ?ocnt)
+         )
+=>
+  ;-- decrease amount of remaining products
+  (bind ?updcnt (- ?ocnt 1))
+
+  ;-- remove response order info
+  (retract ?roi)
+  (modify ?ri (product-count ?updcnt))
+  
+  (printout t "delivered product " ?oid " of " ?eid " (" ?updcnt " prod. remaining)" crlf)
+)
+
+(defrule custom-order-complete
   (custom-order)
   ?gf <- (gamestate (phase PRODUCTION|POST_GAME))
-  ?pf <- (product-delivered 
-           (order ?oid&~0) 
-           (team ?team)
-         )
   ?ri <- (response-info 
            (client ?cid) 
            (extern-id ?eid) 
-           (order-id ?oid)
-         )
-  ?of <- (order
-           (id ?oid)
+           (product-count 0)
          )
 =>
   ;-- forget order and orderer
   (retract ?ri)
 
-  (printout t "INFO: responed to delivered " ?oid " (aka. " ?eid ") ordered by " ?cid crlf)
+  (printout t "INFO: responed to completed order " ?eid ", ordered by " ?cid crlf)
 
   ;-- compose message to inform controller about delivery
   (bind ?delivery-msg (pb-create "llsf_msgs.SetOrderDelivered"))
   (pb-set-field ?delivery-msg "order_id" ?eid)
-                  (pb-set-field ?delivery-msg "team_color" ?team)
+  (pb-set-field ?delivery-msg "team_color" CYAN) ;-- this is ignored
 
   ;-- actually send message
   ;(pb-broadcast ?cid ?delivery-msg)
