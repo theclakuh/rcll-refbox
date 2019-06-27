@@ -9,14 +9,16 @@
 ;-- TEMPLATE DEFS
 ;--
 (deftemplate response-info
-  (slot client (type INTEGER)) 
-  (slot extern-id (type INTEGER)) 
-  (slot product-count (type INTEGER)) 
+  (slot client (type INTEGER))
+  (slot extern-id (type INTEGER))
+  (slot product-count (type INTEGER))
 )
 
 (deftemplate response-product-info
-  (slot extern-id (type INTEGER)) 
-  (slot product-id (type INTEGER)) 
+  (slot extern-id (type INTEGER))
+  (slot product-id (type INTEGER))
+  (slot quantity (type INTEGER))
+  (slot last-delivered (type FLOAT))
 )
 
 ;--
@@ -46,6 +48,7 @@
   (bind ?complexity (pb-field-value ?order "complexity"))
   (bind ?base-color (pb-field-value ?order "base_color"))
   (bind ?cap-color (pb-field-value ?order "cap_color"))
+  (bind ?quantity (pb-field-value ?order "quantity_requested"))
   (bind ?ring-colors (create$))
   (progn$ (?color (pb-field-list ?order "ring_colors"))
     (bind ?ring-colors (append$ ?ring-colors  ?color))
@@ -58,7 +61,7 @@
                  (base-color ?base-color)
                  (ring-colors ?ring-colors)
                  (cap-color ?cap-color)
-                 (quantity-requested 1) 
+                 (quantity-requested ?quantity) 
                  (quantity-delivered 0 0)
                  (start-range 0 0) 
                  (duration-range 0 0)
@@ -81,7 +84,7 @@
 (defrule print-custom-order-success
   (custom-order)
 =>
-  (printout t "INFO: Enabling custom-order was successful" crlf)
+  (printout warn "INFO: Enabling custom-order was successful" crlf)
 )
 
 (defrule invalidate-initial-orders
@@ -90,7 +93,7 @@
                 (start-range ?ss&:(< ?ss 1320) ?se&:(<= ?se 1320))
          ) 
 =>
-  (printout t "INFO: Invalidated initial order id " ?id crlf)
+  (printout warn "INFO: Remove initial order id " ?id crlf)
 
   ;-- remove original game order
   (retract ?of)  
@@ -107,7 +110,7 @@
          )
 =>
 
-  (printout t "INFO: Resceived order information from client " ?cid crlf)
+  (printout warn "INFO: Resceived order information from client " ?cid crlf)
   
   ;-- insert orders from message
   (bind ?eid -1)
@@ -123,13 +126,16 @@
     (bind ?cnt (+ ?cnt 1))
     
     ;-- assert response-product-info
+    (bind ?quantity (pb-field-value ?o "quantity_requested"))
     (assert (response-product-info
               (extern-id ?eid)
               (product-id ?oid)
+              (quantity ?quantity)
+              (last-delivered 0.0)
             )
     )
     
-    (printout t "INFO: Append product " ?oid " to order " ?eid crlf)
+    (printout warn "INFO: Append " ?quantity "x products " ?oid " to order " ?eid crlf)
   )
   
   ;-- remember orders and orderer (client)
@@ -140,15 +146,42 @@
           )
   )
     
-  (printout t "INFO: Inserted order " ?eid " with " ?cnt " products" crlf)
+  (printout warn "INFO: Inserted order " ?eid " with " ?cnt " products" crlf)
 )
 
 (defrule custom-product-delivered
+  ?pf <- (product-delivered (order ?oid&~0) (game-time ?gt))
+  ?of <- (order (id ?oid))
+  ?roi <- (response-product-info 
+            (extern-id ?eid) 
+            (product-id ?oid)
+            ;-- prevent triggering when quantity is already reached
+            (quantity    ?quantity&:(> ?quantity 0))
+            ;-- prevent triggering same product-delivered multiple times
+            (last-delivered ?time&~?gt)
+          )
+  ?ri <- (response-info 
+           (extern-id ?eid) 
+           (product-count ?ocnt)
+         )
+=>
+  ;-- decrease remaining quanties
+  (bind ?updquant (- ?quantity 1))
+  (modify ?roi 
+            (quantity ?updquant)
+            (last-delivered ?gt)
+  )
+  
+  (printout warn "deliverd product of " ?oid " (" ?updquant " remaining)" crlf)
+)
+
+(defrule custom-all-of-product-delivered
   ?pf <- (product-delivered (order ?oid&~0))
   ?of <- (order (id ?oid))
   ?roi <- (response-product-info 
             (extern-id ?eid) 
             (product-id ?oid)
+            (quantity 0)
           )
   ?ri <- (response-info 
            (extern-id ?eid) 
@@ -162,7 +195,7 @@
   (retract ?roi)
   (modify ?ri (product-count ?updcnt))
   
-  (printout t "delivered product " ?oid " of " ?eid " (" ?updcnt " prod. remaining)" crlf)
+  (printout warn "delivered product " ?oid " of " ?eid " (" ?updcnt " prod. remaining)" crlf)
 )
 
 (defrule custom-order-complete
@@ -177,7 +210,7 @@
   ;-- forget order and orderer
   (retract ?ri)
 
-  (printout t "INFO: responed to completed order " ?eid ", ordered by " ?cid crlf)
+  (printout warn "INFO: responed to completed order " ?eid ", ordered by " ?cid crlf)
 
   ;-- compose message to inform controller about delivery
   (bind ?delivery-msg (pb-create "llsf_msgs.SetOrderDelivered"))
