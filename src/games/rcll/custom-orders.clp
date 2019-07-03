@@ -8,13 +8,13 @@
 ;--
 ;-- TEMPLATE DEFS
 ;--
-(deftemplate response-info
+(deftemplate orderer-client-response-info
   (slot client (type INTEGER))
   (slot extern-id (type INTEGER))
   (slot product-count (type INTEGER))
 )
 
-(deftemplate response-product-info
+(deftemplate orderer-client-response-product-info
   (slot extern-id (type INTEGER))
   (slot product-id (type INTEGER))
   (slot quantity (type INTEGER))
@@ -39,7 +39,7 @@
   (return ?id)
 )
 
-(deffunction insert-custom-order
+(deffunction assert-custom-order
   (?order ?order-time)
 
   ;-- gather data from message object
@@ -102,11 +102,15 @@
   
   (bind ?eid 0)
   
+  ;(bind ?orders (pb-field-list ?orderinfo "orders"))
+  ;(bind ?o (first$ ?orders)
+  ;(bind ?eid (pb-field-value ?o "id"))
+
   (foreach ?o (pb-field-list ?orderinfo "orders")
     (bind ?eid (pb-field-value ?o "id"))
     (break)
   )
-  
+    
   (return ?eid)
 )
 
@@ -120,7 +124,7 @@
   (printout warn "INFO: Enabling custom-order was successful" crlf)
 )
 
-(defrule invalidate-initial-orders
+(defrule remove-initial-orders
   (custom-order)
   ?of <- (order (id ?id&:(< ?id 10))
                 (start-range ?ss&:(< ?ss 1320) ?se&:(<= ?se 1320))
@@ -141,12 +145,12 @@
             (rcvd-from ?from-host ?from-port)
             (client-id ?cid)
          )
-  ;-- reject already accepted orders
-  (not (response-info 
-          (extern-id ?eid&:(get-orderinfo-extid ?ptr))
-       )
+  ;-- reject already processing orders
+  (not (orderer-client-response-info 
+          (extern-id ?eid&:(eq ?eid (get-orderinfo-extid ?ptr)))
+        )
   )
-
+  
 =>
 
   (printout warn "INFO: Resceived order information from client " ?cid crlf)
@@ -156,22 +160,21 @@
   (bind ?eid -1)
   (bind ?cnt 0)
   (foreach ?o (pb-field-list ?ptr "orders")
-    (if (< ?cnt 1) then
+    (if (< ?eid 0) then
       (bind ?recv-resp (copy-order ?o))
+      (bind ?eid (pb-field-value ?o "id"))
     )
 
-    (bind ?eid (pb-field-value ?o "id")) ;-- NOTE: should be equal for all orders
-
     (bind ?oid 
-      (insert-custom-order ?o ?now)
+      (assert-custom-order ?o ?now)
     )
     
     ;-- increase product count
     (bind ?cnt (+ ?cnt 1))
     
-    ;-- assert response-product-info
+    ;-- assert orderer-client-response-product-info
     (bind ?quantity (pb-field-value ?o "quantity_requested"))
-    (assert (response-product-info
+    (assert (orderer-client-response-product-info
               (extern-id ?eid)
               (product-id ?oid)
               (quantity ?quantity)
@@ -183,7 +186,7 @@
   )
   
   ;-- remember orders and orderer (client)
-  (assert (response-info
+  (assert (orderer-client-response-info
             (client ?cid) 
             (extern-id ?eid) 
             (product-count ?cnt)
@@ -199,7 +202,7 @@
 (defrule custom-product-delivered
   ?pf <- (product-delivered (order ?oid&~0) (game-time ?gt))
   ?of <- (order (id ?oid))
-  ?roi <- (response-product-info 
+  ?roi <- (orderer-client-response-product-info 
             (extern-id ?eid) 
             (product-id ?oid)
             ;-- prevent triggering when quantity is already reached
@@ -207,7 +210,7 @@
             ;-- prevent triggering same product-delivered multiple times
             (last-delivered ?time&~?gt)
           )
-  ?ri <- (response-info 
+  ?ri <- (orderer-client-response-info 
            (extern-id ?eid) 
            (product-count ?ocnt)
          )
@@ -225,12 +228,12 @@
 (defrule custom-all-of-product-delivered
   ?pf <- (product-delivered (order ?oid&~0))
   ?of <- (order (id ?oid))
-  ?roi <- (response-product-info 
+  ?roi <- (orderer-client-response-product-info 
             (extern-id ?eid) 
             (product-id ?oid)
             (quantity 0)
           )
-  ?ri <- (response-info 
+  ?ri <- (orderer-client-response-info 
            (extern-id ?eid) 
            (product-count ?ocnt)
          )
@@ -248,7 +251,7 @@
 (defrule custom-order-complete
   (custom-order)
   ?gf <- (gamestate (phase PRODUCTION|POST_GAME))
-  ?ri <- (response-info 
+  ?ri <- (orderer-client-response-info 
            (client ?cid) 
            (extern-id ?eid) 
            (product-count 0)
