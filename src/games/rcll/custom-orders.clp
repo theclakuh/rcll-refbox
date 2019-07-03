@@ -77,6 +77,39 @@
   (return ?custom-order-id)
 )
 
+(deffunction copy-order
+  (?orig)
+  
+  (bind ?copy (pb-create "llsf_msgs.Order"))
+  
+  (pb-set-field ?copy "id" (pb-field-value ?orig "id"))
+  (pb-set-field ?copy "complexity" (pb-field-value ?orig "complexity"))
+  (pb-set-field ?copy "base_color" (pb-field-value ?orig "base_color"))
+  (pb-set-field ?copy "cap_color" (pb-field-value ?orig "cap_color"))
+  (pb-set-field ?copy "quantity_requested" (pb-field-value ?orig "quantity_requested"))
+  (pb-set-field ?copy "quantity_delivered_cyan" (pb-field-value ?orig "quantity_delivered_cyan"))
+  (pb-set-field ?copy "quantity_delivered_magenta" (pb-field-value ?orig "quantity_delivered_magenta"))
+  (pb-set-field ?copy "delivery_period_begin" (pb-field-value ?orig "delivery_period_begin"))
+  (pb-set-field ?copy "delivery_period_end" (pb-field-value ?orig "delivery_period_end"))
+  (pb-set-field ?copy "delivery_gate" (pb-field-value ?orig "delivery_gate"))
+  (pb-set-field ?copy "competitive" FALSE)
+  
+  (return ?copy)
+)
+
+(deffunction get-orderinfo-extid
+  (?orderinfo)
+  
+  (bind ?eid 0)
+  
+  (foreach ?o (pb-field-list ?orderinfo "orders")
+    (bind ?eid (pb-field-value ?o "id"))
+    (break)
+  )
+  
+  (return ?eid)
+)
+
 ;--
 ;-- RULES
 ;--
@@ -108,14 +141,25 @@
             (rcvd-from ?from-host ?from-port)
             (client-id ?cid)
          )
+  ;-- reject already accepted orders
+  (not (response-info 
+          (extern-id ?eid&:(get-orderinfo-extid ?ptr))
+       )
+  )
+
 =>
 
   (printout warn "INFO: Resceived order information from client " ?cid crlf)
   
   ;-- insert orders from message
+  (bind ?recv-resp (pb-create "llsf_msgs.Order"))
   (bind ?eid -1)
   (bind ?cnt 0)
   (foreach ?o (pb-field-list ?ptr "orders")
+    (if (< ?cnt 1) then
+      (bind ?recv-resp (copy-order ?o))
+    )
+
     (bind ?eid (pb-field-value ?o "id")) ;-- NOTE: should be equal for all orders
 
     (bind ?oid 
@@ -147,6 +191,9 @@
   )
     
   (printout warn "INFO: Inserted order " ?eid " with " ?cnt " products" crlf)
+
+  (pb-send ?cid ?recv-resp)
+  (pb-destroy ?recv-resp)
 )
 
 (defrule custom-product-delivered
