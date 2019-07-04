@@ -302,14 +302,14 @@
 (defrule production-rs-insufficient-bases
   "The RS has been prepared but it does not have sufficient additional material; switch to BROKEN."
   (gamestate (state RUNNING) (phase PRODUCTION) (game-time ?gt))
-  ?m <- (machine (name ?n) (mtype RS) (state PREPARED)
+  ?m <- (machine (name ?n) (mtype RS) (state PREPARED) (mps-base-counter ?mps-counter)
 		 (rs-ring-color ?ring-color) (bases-added ?ba) (bases-used ?bu))
   (ring-spec (color ?ring-color)
 	     (req-bases ?req-bases&:(> ?req-bases (- ?ba ?bu))))
-  =>
-  (modify ?m (state BROKEN)
-	  (broken-reason (str-cat ?n ": insufficient bases ("
-				  (- ?ba ?bu) " < " ?req-bases ")")))
+  (not (mps-status-feedback ?n SLIDE-COUNTER ?))
+	=>
+  (printout t "DIRTY HACK: asserting mps status feedback")  i
+  (assert (mps-status-feedback ?n SLIDE-COUNTER (+ 1 ?mps-counter)))
 )
 
 (defrule production-rs-move-to-mid
