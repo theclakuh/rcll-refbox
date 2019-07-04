@@ -200,7 +200,7 @@
 )
 
 (defrule custom-product-delivered
-  ?pf <- (product-delivered (order ?oid&~0) (game-time ?gt))
+  ?pf <- (product-processed (order ?oid&~0) (game-time ?gt))
   ?of <- (order (id ?oid))
   ?roi <- (orderer-client-response-product-info 
             (extern-id ?eid) 
@@ -226,7 +226,7 @@
 )
 
 (defrule custom-all-of-product-delivered
-  ?pf <- (product-delivered (order ?oid&~0))
+  ?pf <- (product-processed (order ?oid&~0))
   ?of <- (order (id ?oid))
   ?roi <- (orderer-client-response-product-info 
             (extern-id ?eid) 
